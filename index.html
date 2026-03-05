@@ -8,7 +8,7 @@
     body {
       font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
       background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.7)),
-                  url('https://i.imgur.com/QRjMbzc.jpeg') no-repeat center center fixed;
+                  url('https://i.imgur.com/your-image-host-link-here.jpg') no-repeat center center fixed;
       background-size: cover;
       color: #f0f4f8;
       margin: 0;
@@ -188,7 +188,8 @@
         });
 
         if (!response.ok) {
-          throw new Error(`Server responded with ${response.status}`);
+          const errorText = await response.text();
+          throw new Error(`Server responded with ${response.status}: ${errorText}`);
         }
 
         const data = await response.json();
@@ -205,7 +206,7 @@
 
             html += `
               <div class="planet-item">
-                <strong>${name}</strong>: ${sign} ${deg.toFixed(2)}°${retro}<br>
+                <strong>${name}</strong>: ${sign} $$   {deg.toFixed(2)}°   $${retro}<br>
                 <small>Full: ${fullDeg.toFixed(2)}°</small>
               </div>
             `;
