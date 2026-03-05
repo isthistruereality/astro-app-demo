@@ -2,14 +2,14 @@
   "version": 2,
   "builds": [
     {
-      "src": "api/**/*.py",
+      "src": "api/chart/index.py",
       "use": "@vercel/python"
     }
   ],
   "routes": [
     {
       "src": "/api/chart",
-      "dest": "/api/chart.py"
+      "dest": "/api/chart/index.py"
     },
     {
       "src": "/(.*)",
