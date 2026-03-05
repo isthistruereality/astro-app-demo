@@ -8,7 +8,7 @@
     body {
       font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
       background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.7)),
-                  url('https://i.imgur.com/QRjMbzc.jpeg') no-repeat center center fixed;
+                  url('https://i.imgur.com/your-image-host-link-here.jpg') no-repeat center center fixed;
       background-size: cover;
       color: #f0f4f8;
       margin: 0;
@@ -168,62 +168,3 @@
       loading.style.display = 'block';
       resultDiv.innerHTML = '';
       errorDiv.innerHTML = '';
-
-      const formData = new FormData(form);
-      const payload = {
-        year: parseInt(formData.get('year')),
-        month: parseInt(formData.get('month')),
-        date: parseInt(formData.get('date')),
-        hours: parseInt(formData.get('hours')),
-        minutes: parseInt(formData.get('minutes')),
-        seconds: 0,
-        birth_city: formData.get('birth_city').trim(),
-      };
-
-      try {
-        const response = await fetch('/api/chart', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-
-        if (!response.ok) {
-          throw new Error(`Server responded with ${response.status}`);
-        }
-
-        const data = await response.json();
-
-        let html = '<h2>Your Western Natal Positions</h2>';
-
-        if (data.output && Array.isArray(data.output)) {
-          data.output.forEach(item => {
-            const name = item.name || 'Unknown Planet';
-            const sign = item.sign || 'Unknown';
-            const deg = item.degree || 0;
-            const fullDeg = item.full_degree || 0;
-            const retro = item.retrograde ? ' (R)' : '';
-
-            html += `
-              <div class="planet-item">
-                <strong>${name}</strong>: ${sign} ${deg.toFixed(2)}°${retro}<br>
-                <small>Full: ${fullDeg.toFixed(2)}°</small>
-              </div>
-            `;
-          });
-        } else {
-          html += '<p>No positions found. Raw data:</p><pre>' + JSON.stringify(data, null, 2) + '</pre>';
-        }
-
-        resultDiv.innerHTML = html;
-      } catch (err) {
-        errorDiv.innerHTML = 'Error: ' + err.message + ' (check console for details)';
-        console.error('Fetch error:', err);
-      } finally {
-        submitBtn.disabled = false;
-        submitBtn.textContent = 'Calculate Chart';
-        loading.style.display = 'none';
-      }
-    });
-  </script>
-</body>
-</html>
