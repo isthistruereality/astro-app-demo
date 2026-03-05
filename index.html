@@ -183,21 +183,15 @@
 
         if (data.output && Array.isArray(data.output)) {
           data.output.forEach(item => {
-            const name = item.planet?.en || 'Unknown Planet';
-            const fullDeg = item.fullDegree || 0;
-            const normDeg = item.normDegree || (fullDeg % 30);
-            let sign = item.sign?.en || 'Unknown';
-
-            if (sign === 'Unknown') {
-              const signs = ['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'];
-              sign = signs[Math.floor(fullDeg / 30) % 12];
-            }
-
-            const retro = item.isRetro === 'True' ? ' (R)' : '';
+            const name = item.name || 'Unknown Planet';
+            const sign = item.sign || 'Unknown';
+            const deg = item.degree || 0;
+            const fullDeg = item.full_degree || 0;
+            const retro = item.retrograde ? ' (R)' : '';
 
             html += `
               <div class="planet-item">
-                <strong>${name}</strong>: ${sign} ${normDeg.toFixed(2)}°${retro}<br>
+                <strong>${name}</strong>: ${sign} ${deg.toFixed(2)}°${retro}<br>
                 <small>Full: ${fullDeg.toFixed(2)}°</small>
               </div>
             `;
