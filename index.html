@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Natal Chart Calculator - Astro App Demo</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      background: linear-gradient(to bottom, #f0f4f8, #d9e2ec);
+      color: #1e293b;
+      margin: 0;
+      padding: 2rem;
+      min-height: 100vh;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      background: white;
+      padding: 2rem;
+      border-radius: 1rem;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    }
+    h1 {
+      text-align: center;
+      color: #1e40af;
+      margin-bottom: 1.5rem;
+    }
+    form {
+      display: grid;
+      gap: 1.2rem;
+    }
+    label {
+      display: grid;
+      gap: 0.5rem;
+      font-weight: 500;
+    }
+    input {
+      padding: 0.8rem;
+      border: 1px solid #cbd5e1;
+      border-radius: 0.5rem;
+      font-size: 1rem;
+    }
+    button {
+      padding: 1rem;
+      background: #4f46e5;
+      color: white;
+      border: none;
+      border-radius: 0.5rem;
+      font-size: 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    button:hover:not(:disabled) {
+      background: #4338ca;
+    }
+    button:disabled {
+      background: #a5b4fc;
+      cursor: not-allowed;
+    }
+    #result {
+      margin-top: 2rem;
+      padding: 1.5rem;
+      background: #f8fafc;
+      border-radius: 0.75rem;
+      border: 1px solid #e2e8f0;
+    }
+    #result h2 {
+      margin-top: 0;
+      color: #1e40af;
+    }
+    .planet-item {
+      margin: 1rem 0;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    .planet-item:last-child {
+      border-bottom: none;
+    }
+    #error {
+      margin-top: 1rem;
+      color: #ef4444;
+      font-weight: 500;
+    }
+    #loading {
+      text-align: center;
+      margin-top: 1rem;
+      color: #64748b;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Western Natal Chart Calculator</h1>
+    <p style="text-align: center; color: #64748b;">Enter your birth details to get planetary positions.</p>
+
+    <form id="birthForm">
+      <label>
+        Year
+        <input type="number" name="year" required min="1900" max="2100" value="1990" />
+      </label>
+      <label>
+        Month (1–12)
+        <input type="number" name="month" required min="1" max="12" value="3" />
+      </label>
+      <label>
+        Day (1–31)
+        <input type="number" name="date" required min="1" max="31" value="4" />
+      </label>
+      <label>
+        Hour (0–23)
+        <input type="number" name="hours" required min="0" max="23" value="14" />
+      </label>
+      <label>
+        Minute (0–59)
+        <input type="number" name="minutes" required min="0" max="59" value="30" />
+      </label>
+      <label>
+        Latitude (e.g., Denver: 39.7392)
+        <input type="number" step="any" name="latitude" required value="39.7392" />
+      </label>
+      <label>
+        Longitude (e.g., Denver: -104.9903)
+        <input type="number" step="any" name="longitude" required value="-104.9903" />
+      </label>
+      <label>
+        Timezone offset (e.g., -7.0 for MST, -6.0 for MDT)
+        <input type="number" step="any" name="timezone" required value="-7.0" />
+      </label>
+
+      <button type="submit" id="submitBtn">Calculate Chart</button>
+    </form>
+
+    <div id="loading" style="display: none;">Calculating your chart...</div>
+    <div id="result"></div>
+    <div id="error"></div>
+  </div>
+
+  <script>
+    const form = document.getElementById('birthForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const loading = document.getElementById('loading');
+    const resultDiv = document.getElementById('result');
+    const errorDiv = document.getElementById('error');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Calculating...';
+      loading.style.display = 'block';
+      resultDiv.innerHTML = '';
+      errorDiv.innerHTML = '';
+
+      const formData = new FormData(form);
+      const payload = {
+        year: parseInt(formData.get('year')),
+        month: parseInt(formData.get('month')),
+        date: parseInt(formData.get('date')),
+        hours: parseInt(formData.get('hours')),
+        minutes: parseInt(formData.get('minutes')),
+        seconds: 0,
+        latitude: parseFloat(formData.get('latitude')),
+        longitude: parseFloat(formData.get('longitude')),
+        timezone: parseFloat(formData.get('timezone')),
+      };
+
+      try {
+        const response = await fetch('/api/chart', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) {
+          throw new Error(`Server responded with ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        let html = '<h2>Your Western Natal Positions</h2>';
+
+        if (data.output && Array.isArray(data.output)) {
+          data.output.forEach(item => {
+            const name = item.planet?.en || 'Unknown Planet';
+            const fullDeg = item.fullDegree || 0;
+            const normDeg = item.normDegree || (fullDeg % 30);
+            let sign = item.sign?.en || 'Unknown';
+
+            if (sign === 'Unknown') {
+              const signs = ['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'];
+              sign = signs[Math.floor(fullDeg / 30) % 12];
+            }
+
+            const retro = item.isRetro === 'True' ? ' (R)' : '';
+
+            html += `
+              <div class="planet-item">
+                <strong>${name}</strong>: ${sign} ${normDeg.toFixed(2)}°${retro}<br>
+                <small>Full: ${fullDeg.toFixed(2)}°</small>
+              </div>
+            `;
+          });
+        } else {
+          html += '<p>No positions found. Raw data:</p><pre>' + JSON.stringify(data, null, 2) + '</pre>';
+        }
+
+        resultDiv.innerHTML = html;
+      } catch (err) {
+        errorDiv.innerHTML = 'Error: ' + err.message + ' (check console for details)';
+        console.error('Fetch error:', err);
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Calculate Chart';
+        loading.style.display = 'none';
+      }
+    });
+  </script>
+</body>
+</html>
