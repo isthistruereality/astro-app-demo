@@ -35,7 +35,7 @@
       gap: 0.5rem;
       font-weight: 500;
     }
-    input {
+    input, select {
       padding: 0.8rem;
       border: 1px solid #cbd5e1;
       border-radius: 0.5rem;
@@ -88,6 +88,12 @@
       margin-top: 1rem;
       color: #64748b;
     }
+    small.note {
+      font-size: 0.85rem;
+      color: #64748b;
+      display: block;
+      margin-top: 0.3rem;
+    }
   </style>
 </head>
 <body>
@@ -125,8 +131,19 @@
         <input type="number" step="any" name="longitude" required value="-104.9903" />
       </label>
       <label>
-        Timezone offset (e.g., -7.0 for MST, -6.0 for MDT)
-        <input type="number" step="any" name="timezone" required value="-7.0" />
+        Time Zone
+        <select name="timezone" required>
+          <option value="-8.0">Pacific Time (Los Angeles, Seattle – PST/PDT)</option>
+          <option value="-7.0" selected>Mountain Time (Denver, Phoenix – MST/MDT)</option>
+          <option value="-6.0">Central Time (Chicago, Dallas – CST/CDT)</option>
+          <option value="-5.0">Eastern Time (New York, Miami – EST/EDT)</option>
+          <option value="-4.0">Atlantic Time (Halifax, Puerto Rico)</option>
+          <option value="0.0">UTC / Greenwich Mean Time (London)</option>
+        </select>
+        <small class="note">
+          Choose your time zone. The value is for standard time.<br>
+          If your birth was during Daylight Saving Time (usually March–November), add +1 to the number (e.g., Denver summer = -6.0 instead of -7.0).
+        </small>
       </label>
 
       <button type="submit" id="submitBtn">Calculate Chart</button>
@@ -163,7 +180,7 @@
         seconds: 0,
         latitude: parseFloat(formData.get('latitude')),
         longitude: parseFloat(formData.get('longitude')),
-        timezone: parseFloat(formData.get('timezone')),
+        timezone: parseFloat(formData.get('timezone')),  // now comes from <select> value
       };
 
       try {
